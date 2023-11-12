@@ -10,9 +10,10 @@ Add the following to your vimrc:
 NeoBundle 'nfnty/vim-nftables'
 ```
 
-In newer versions of vim, no need for a plugin manager:
+NeoBundle is no longer actively maintained. In newer versions of vim, there is no need for a plugin manager:
 
-```mkdir $HOME/.vim/pack/vendor/start
+```
+mkdir $HOME/.vim/pack/vendor/start
 cd $HOME/.vim/pack/vendor/start
 git checkout https://github.com/awisse/vim-nftables.git
 ```
