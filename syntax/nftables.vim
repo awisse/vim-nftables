@@ -47,7 +47,6 @@ syn match   nftablesPriority    "priority\s\+\(raw\|mangle\|dstnat\|filter\|secu
 syn region  nftablesString      start=/"/ end=/"/
 
 " syn keyword Function map
-"syn keyword Type ct
 "syn keyword Type length protocol mark skuid skgid rtclassid
 
 " Address families
@@ -96,6 +95,7 @@ syn match nftablesPolicy    "-\@<!\<policy\>"
 
 " Rules
 syn match nftablesConntrack "-\@<!\<ct\s\+state\>"
+syn match nftablesCTStates  "-\@<!\<\(established\|related\|invalid\|new\|untracked\)\>"
 
 " Statements
 " Verdict
@@ -127,10 +127,9 @@ syn match nftablesCounter   "-\@<!\<limit\>"
 " Conntrack
 syn match nftablesCTStatemt "\<ct\s\+\(mark\|event\|label\|zone\)\s\+set\>"
 
-
-syn keyword Special snat dnat masquerade redirect
-syn keyword Keyword counter log limit
-syn keyword Keyword define
+" syn keyword Special snat dnat masquerade redirect
+" syn keyword Keyword counter log limit
+" syn keyword Keyword define
 
 " Colors and highlights
 hi def link nftablesSet         Keyword
@@ -158,6 +157,7 @@ hi def link nftablesTable       Function
 hi def link nftablesChain       Function
 hi def link nftablesChainType   Type
 hi def link nftablesConntrack   Type
+hi def link nftablesCTStates    Constant
 hi def link nftablesPolicy      PreProc
 hi def link nftablesPriority    Special
 
