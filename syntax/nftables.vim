@@ -1,167 +1,150 @@
-" vim: ts=4:sw=2:sts=2:
-syntax clear
-if exists('b:current_syntax') || &compatible
-    finish
+" vim: tabstop=2:shiftwidth=2:softtabstop=2:
+let b:nft_debug = 1 " XXX: Set to 0 when not debugging
+if b:nft_debug
+  syntax clear 
+elseif exists(b:current_syntax) || &compatible
+  finish 
 endif
 
-let s:cpo_save = &cpo
-set cpo&vim
+" 1. the "-" character appears in certain keywords (ex: gc-interval)
+" 2. Allow chain and table names which contain keywords separated with "-"
+set iskeyword+=-
 
-syn match nftablesSet           /{.*}/ contains=nftablesSetEntry
-syn match nftablesSetEntry      /[a-zA-Z0-9]\+/ contained
-
-" Hexadecimal Numbers
-syn match nftablesHex           "\<0x[0-9A-Fa-f]\+\>"
-" syn match nftablesDelimiter     "[./:]" contained
-" syn match nftablesMask          "/[0-9.]\+" contained contains=nftablesDelimiter
-
-" Addresses
-syn match nftablesIP4addr       "\d\{1,3\}\(\.\d\{1,3\}\)\{3\}\(\/[1-9]\d\)\?"
-syn match nftablesIP6addr       "\(\x\{0,4\}:\)\+\x\{0,4\}\(\/[1-9]\d\{0,2\}\)\?"
-syn match nftablesIP6addr       "\[\(\x\{0,4\}:\)\+\x\{0,4\}\]\(\/[1-9]\{0,2\}\)\?"
-syn match nftablesMACaddr           "\<\x\{2\}\(:\x\{2\}\)\{5\}\>"
-
-"syn keyword Type length protocol mark skuid skgid rtclassid
+" Multi-use keywords which can be verbs or other types
+" set: Verb, Object : Map to verb. "add set" is technically a composed verb
+" map: Verb, Object : Map to verb. "add map" is technically a composed verb
 "
-" Interfaces
-syn match nftablesInterface     "\<-\@<!\(iif\|iifname\|iiftype\|oif\|oifname\)\>"
-
-" TCP Flags
-syn match nftablesTCPFlags      "\<-\@<!\(fin\|syn\|rst\|psh\|ack\|urg\|ecn\|cwr\)\>"
-
 " Comments
-syn keyword nftablesTodo        FIXME TODO XXX NOTE contained
-syn match   nftablesComment     "#.*" contains=nftablesTodo
-syn match   nftablesComment     "\<-\@<!\<comment\>"
+syn keyword nftTodo         FIXME TODO XXX NOTE contained
+syn match   nftComment      /#.*/ contains=nftTodo
+syn keyword nftComment      comment
 
-" Tables, Chains
-syn match   nftablesTable       "\<\(add\|create\|delete\|flush\)\s\+table\>"
-syn match   nftablesTable       "-\@<!\<table\>"
-syn match   nftablesChain       "\<\(add\|create\|delete\|flush\)\?\s\+chain\>"
-syn match   nftablesChain       "-\@<!\<chain\>"
+" Verbs
+syn keyword nftInclude      include
+syn keyword nftVerb         define add delete reset flush set map
 
-" Priority
-syn match   nftablesPriority    "priority\s\+\(raw\|mangle\|dstnat\|filter\|security\|srcnat\|out\|-\?\d\+\)"
-"
-" String
-syn region  nftablesString      start=/"/ end=/"/
+" Objects
+syn keyword nftObject       chain element flowtable rule ruleset table element
+syn keyword nftStatefulObj  counter quota 
 
-" syn keyword Function map
-"syn keyword Type length protocol mark skuid skgid rtclassid
-
-" Address families
-syn match nftablesAddrFamily    "[^-]\<ip\>"
-syn match nftablesAddrFamily    "[^-]\<ip6\>"
-syn match nftablesAddrFamily    "[^-]\<inet\>"
-syn match nftablesAddrFamily    "[^-]\<arp\>"
-syn match nftablesAddrFamily    "[^-]\<bridge\>"
-syn match nftablesAddrFamily    "[^-]\<netdev\>"
-
-" Ruleset
-syn match nftablesRuleset   "[^-]\<ruleset\>"
-syn match nftablesRuleset   "[^-]\<list\>"
-syn match nftablesRuleset   "[^-]\<flush\>"
-
-" Protocols
-syn match nftablesProto     "[^-]\<ether\>"
-syn match nftablesProto     "[^-]\<vlan\>"
-syn match nftablesProto 	"[^-]\<arp\>"
-syn match nftablesProto 	"[^-]\<ip\>"
-syn match nftablesProto 	"[^-]\<icmp\>"
-syn match nftablesProto 	"[^-]\<igmp\>"
-syn match nftablesProto 	"[^-]\<ip6\>"
-syn match nftablesProto 	"[^-]\<icmpv6\>"
-syn match nftablesProto 	"[^-]\<tcp\>"
-syn match nftablesProto 	"[^-]\<udp\>"
-syn match nftablesProto 	"[^-]\<udplite\>"
-syn match nftablesProto 	"[^-]\<sctp\>"
-syn match nftablesProto 	"[^-]\<dccp\>"
-syn match nftablesProto 	"[^-]\<ah\>"
-syn match nftablesProto 	"[^-]\<esp\>"
-syn match nftablesProto 	"[^-]\<comp\>"
-syn match nftablesProto 	"[^-]\<icmpx\>"
-
-" Hooks
-syn match nftablesHook 		"\<hook prerouting\>"
-syn match nftablesHook 		"\<hook input\>"
-syn match nftablesHook 		"\<hook forward\>"
-syn match nftablesHook 		"\<hook output\>"
-syn match nftablesHook 		"\<hook postrouting\>"
-syn match nftablesHook 		"\<hook ingress\>"
-
-" Chain Type
-syn match nftablesChainType "\<type \(filter\|nat\|route\)\>"
-syn match nftablesPolicy    "-\@<!\<policy\>"
-
-" Rules
-syn match nftablesConntrack "-\@<!\<ct\s\+state\>"
-syn match nftablesCTStates  "-\@<!\<\(established\|related\|invalid\|new\|untracked\)\>"
+" Stateful Objects
+syn match   nftCTObject     "\<ct \%(helper\|timeout\|expectation\)\>"
 
 " Statements
-" Verdict
-syn match nftablesVerdict   "-\@<!\<accept\>"
-syn match nftablesVerdict   "-\@<!\<drop\>"
-syn match nftablesVerdict   "-\@<!\<queue\>"
-syn match nftablesVerdict   "-\@<!\<continue\>"
-syn match nftablesVerdict   "-\@<!\<return\>"
-syn match nftablesVerdict   "-\@<!\<jump\>"
-syn match nftablesVerdict   "-\@<!\<goto\>"
-" Payload, Extension Header
-syn match nftablesPayldExtH "-\@<!\<set\>"
-" Log
-syn match nftablesLog       "-\@<!\<log\>"
-syn match nftablesLog       "-\@<!\<prefix\>"
-syn match nftablesLog       "-\@<!\<level\>"
-syn match nftablesLog       "-\@<!\<flags\>"
-syn match nftablesLog       "-\@<!\<group\>"
-syn match nftablesLog       "-\@<!\<snaplen\>"
-syn match nftablesLog       "-\@<!\<audit\>"
-syn match nftablesLog       "-\@<!\<queue-threshold\>"
-" Reject 
-syn match nftablesReject    "-\@<!\<reject\(\s\+with\)\?\>"
-" Counter
-syn match nftablesCounter   "-\@<!\<counter\>"
-syn match nftablesCounter   "-\@<!\<packets\>"
-syn match nftablesCounter   "-\@<!\<bytes\>"
-syn match nftablesCounter   "-\@<!\<limit\>"
-" Conntrack
-syn match nftablesCTStatemt "\<ct\s\+\(mark\|event\|label\|zone\)\s\+set\>"
+syn match   nftCTStatement  "\<ct expectation set\>"
 
-" syn keyword Special snat dnat masquerade redirect
-" syn keyword Keyword counter log limit
-" syn keyword Keyword define
+" Parameters (in tables, chains, sets, maps)
+syn keyword nftTableParam   flags
+syn keyword nftChainParam   type hook device priority policy 
+syn keyword nftSetParam     typeof flags timeout gc-interval elements size auto-merge
+syn keyword nftElementParam expires
+syn keyword nftFlowtbParam  devices
+
+" Predefined constants
+" TCP FLAGS
+syn keyword nftTCPFlags     fin syn rst psh ack urg ecn cwr
+" ICMP TYPE
+syn keyword nftICMPType     echo-reply destination-unreachable source-quench redirect 
+                              \ echo-request router-advertisement router-solicitation 
+                              \ time-exceeded parameter-problem timestamp-request 
+                              \ timestamp-reply info-request info-reply address-mask-request
+" ICMP CODE
+syn keyword nftICMPCode     net-unreachable host-unreachable port-unreachable 
+                              \ port-unreachable frag-needed net-prohibited host-prohibited
+                              \ admin-prohibited
+" ICMPV6 TYPE TYPE
+syn keyword nftICMPV6TypeType  
+                              \ packet-too-big mld-listener-query mld-listener-report
+                              \ mld-listener-done mld-listener-reduction nd-router-solicit
+                              \ nd-router-advert nd-neighbor-solicit nd-neighbor-advert
+                              \ nd-redirect router-renumbering ind-neighbor-solicit
+                              \ ind-neighbor-advert mld2-listener-report
+" ICMPV6 CODE TYPE
+syn keyword nftICMPV6CodeType     
+                              \ no-route addr-unreachable policy-fail reject-route
+" ct_state
+syn keyword nftCTState     invalid established related new untracked 
+" ct_dir
+syn keyword nftCTDir       original reply 
+" ct_status
+syn keyword nftCTStatus    expected seen-reply assured confirmed snat dnat dying
+" ct_event
+syn keyword nftCTEvent     destroy protoinfo helper mark seqadj secmark label
+" dccp_pkttype
+syn keyword nftPKTType     request response data ack dataack closereq close sync syncack
+
+" Types
+syn keyword nftDataType     integer bitmask string ipv4_addr ipv6_addr boolean
+syn keyword nftCTType       ct_state ct_dir ct_status ct_event ct_label
+syn keyword nftICMPType     icmp_type icmp_code icmpx_code icmpv6_code 
+syn keyword nftDCCPType     dccp_pkttype
+
+" Values
+syn match   nftVariable     /\$\?\a\w\?/
+syn region  nftString       start=/"/ end=/"/
+syn match   nftHex          "\<0x\x\+\>"
+syn match   nftIP4addr      "\<\d\{1,3}\%(\.\d\{1,3}\)\{3}\%(\/[1-9]\d\)\?\>"
+syn match   nftIP6addr      "\%(\x\{0,4}:\)\+\x\{0,4}\%(\/[1-9]\d\{0,2}\)\?"
+syn match   nftIP6addr      "\[\%(\x\{0,4}:\)\+\x\{0,4}\]\%(\/[1-9]\{0,2}\)\?"
+syn match   nftMACaddr      "\<\x\{2}\%(:\x\{2}\)\{5}\>"
+syn match   nftTimespec     "\<\%(\d\{1,2}d\)\?\%(\d\{1,2}h\)\?\%(\d\{1,2}m\)\?\%(\d\{1,2}s\)\?\>"
+
+" Address Families and Hooks
+syn keyword nftAddrFamily   ip ip6 inet arp bridge netdev
+syn keyword nftHook         hook prerouting input forward output postrouting ingress egress
+
+
+" Meta Expressions
+syn match   nftMeta           "\<meta\s\+\%(length\|nfproto\|l4proto\|protocol\|priority\)\>"
+syn keyword nftMeta           meta mark iif iifname iiftype oif oifname oiftype sdif sdifname
+                              \ skuid skgid nftrace rtclassid ibrname obrname pkttype cpu 
+                              \ nftrace rtclassid ibrname obrname pkttype cpu 
+                              \ iifgroup oifgroup cgroup random ipsec iifkind oifkind 
+                              \ time hour day
+" Socket Expression
+syn match   nftSocket         "\<socket\s\+\%(transparent\|mark\|wildcard\)\>"
+syn match   nftSocket         "\<socket\s\+cgroupv2\s\+level\s\+\d\>"
+
+" OSF Expression
+syn match   nftOSF            "\<osf\%(ttl\s\+\%(loose\|skip\)\)\?\s\+\%(name\|version\)\>"
+
+" FIB Expression
+syn match   nftFib            "\<fib\s\+\%(saddr\|daddr\|mark\|iif\|oif\)\>"
+syn keyword nftMeta           type
+
+" Routing expressions
+syn match   nftRouting        "\<rt\%(\s\+ip\|\s\+ip6\)\?\s\+\%(classid\|nexthop\|mtu\|ipsec\)\>"
+
+" IPSEC expressions
+syn match   nftIPSEC          "\<ipsec\%(\s\+in\|\s\+out\)\%(\s\+spnum\s\+\d\+\)\?\s\+\%(ip\|ip6\|reqid\|spi\)\%(\s\+saddr\|\s\+daddr\)\>"
 
 " Colors and highlights
-hi def link nftablesSet         Keyword
-hi def link nftablesTCPFlags    Constant
-hi def link nftablesSetEntry    Operator
-hi def link nftablesNumber      Number
-hi def link nftablesHex         Number
-hi def link nftablesHook        PreProc
-hi def link nftablesAddrFam     Type
-hi def link nftablesProto       Type
-hi def link nftablesInterface   Type
-hi def link nftablesVerdict     Statement
-hi def link nftablesPayldExtH   Statement
-hi def link nftablesLog         Statement
-hi def link nftablesReject      Statement
-hi def link nftablesCounter     Statement
-hi def link nftablesCTStatemt   Statement
-hi def link nftablesIP4addr     Identifier
-hi def link nftablesIP6addr     Identifier
-hi def link nftablesMACaddr     Identifier
-hi def link nftablesTODO        Todo
-hi def link nftablesComment     Comment
-hi def link nftablesString      String
-hi def link nftablesTable       Function
-hi def link nftablesChain       Function
-hi def link nftablesChainType   Type
-hi def link nftablesConntrack   Type
-hi def link nftablesCTStates    Constant
-hi def link nftablesPolicy      PreProc
-hi def link nftablesPriority    Special
+hi nftType                    ctermfg=3
+hi nftVerb                    ctermfg=12
+hi nftValue                   ctermfg=9
+hi nftObject                  ctermfg=38
 
-let b:current_syntax = 'nftables'
+hi def link nftInclude        Include
+hi def link nftString         String
+hi def link nftTodo           Todo
+hi def link nftComment        Comment
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
+hi def link nftCTVerb         nftVerb
+hi def link nftVariable       Identifier
+
+hi def link nftParameter      PreProc
+hi def link nftConstant       Constant
+hi def link nftHex            nftValue
+hi def link nftMACaddr         nftValue
+
+hi def link nftICMPType       nftType
+hi def link nftExpression     Identifier
+hi def link nftVariable       Identifier
+
+hi def link nftAddrFamily     Type
+
+
+
+if b:nft_debug
+  let b:current_syntax = 'nft'
+endif
