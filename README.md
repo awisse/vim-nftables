@@ -1,5 +1,5 @@
 # vim-nftables
-
+G
 ## Installation
 
 
@@ -24,3 +24,10 @@ After installing NeoBundle, add the following to your vimrc:
 ```vim
 NeoBundle 'nfnty/vim-nftables'
 ```
+
+## Recommendations
+
+Note that this is not a full parser of the nftables syntax. If you choose a reserved keyword, like, 
+for instance `input`, `example`, `filter`, `forward` as table, chain 
+set or other object names, these will be highlighted like the corresponding keyword. So in order to fully benefit from this syntax 
+highlighting, choose object names that are not reserved words. 
