@@ -1,0 +1,107 @@
+# vim:ft=nftables
+
+################################ This block is for testing nftables.vim ###############################
+# First, a sample line for each possibility from the man page:
+# 1. Creating tables, chains, sets, maps
+# 2. Adding rules
+# 3. Expressions
+# 
+## CONSTANTS
+1234
+192.168.0.2/24
+fe80:1b3::1/32
+[fe80:1b3::1]/32
+## STRING
+"The_quick br0wn F0x jumps over the l@zy dog"
+## IDENTIFIER
+xTable yChain zMap $zMap @ySet
+
+## INCLUDE FILES
+include other_rules.nft
+
+## SYMBOLIC VARIABLES
+define aVariable = 1234
+undefine aVariable
+redefine aVariable = 255.255.255.0
+$aVariable
+
+## ADDRESS FAMILIES
+ip ip6 inet arp bridge netdev
+## Hooks
+prerouting input forward output postrouting ingress egress
+
+## RULESET
+flush ruleset
+
+## TABLES
+add table xTable inet comment "xTable"
+delete table yTable arp comment "xTable yTable"
+add table xIP comment "A table with default address family"
+
+## CHAINS
+chain nat yTable xChain {
+    type filter; hook prerouting; device "eth0"; priority filter; policy drop; comment "A new chain"
+}
+add chain ip yTable xChain type nat hook input device "eth0" priority filter policy drop comment "A new chain"
+add chain ip yTable xChain type filter hook input device "eth0" priority filter policy drop comment "A new chain"
+add chain ip yTable xChain type route hook input device "eth0" priority filter policy drop comment "A new chain"
+priority raw mangle dstnat filter security srcnat out
+table inet fw {
+    chain xChain {
+        type filter; hook prerouting; device "eth0"; priority filter; policy drop; comment "A new chain"
+    }
+}
+
+## RULES
+add rule inet xTable xChain 
+add rule ip6 xTable xChain saddr { 10.0.0.0/8, 192.168.0.0/16 } tcp dport { 22, 443 } accept
+table inet fw {
+    chain xChain {
+        type filter; hook prerouting; device "eth0"; priority filter; policy drop; comment "A new chain"
+        saddr { 10.0.0.0/8, 192.168.0.0/16 } tcp dport { 22, 443 } accept
+    }
+}
+
+## SETS
+add set inet xTable ySet { type ether_addr; flags interval; timeout 1.5m; gc-interval 3d; elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
+table inet fw {
+    set ySet { type ether_addr; flags interval; timeout 1.5d; gc-interval 3d; 
+        elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
+    set zSet { type ipv4_addr; flags timeout; timeout 3.1h; gc-interval 3d; 
+        elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
+    set zSet { typeof xExpr; flags timeout; timeout 30m; gc-interval 3d; 
+        elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
+    chain xChain {
+        type filter; hook prerouting; device "eth0"; priority filter; policy drop; comment "A new chain"
+        saddr { 10.0.0.0/8, 192.168.0.0/16 } tcp dport { 22, 443 } accept
+    }
+}
+
+## MAPS
+add map ip6 xTable yMap { type inet_service: ipv6_addr; flags constant; elements = { 80 : fe80:ae61:1234:abcd::123 };
+    size 15; comment "A Map"; policy accept }
+    table ip6 xTable {
+        map yMap { type inet_service: ipv6_addr; flags constant; elements = { 80 : fe80:ae61:1234:abcd::123 };
+            size 15; comment "A Map"; policy accept }
+}
+
+
+## ELEMENTS
+add element ip xTable ySet { theElement timeout 3h15m expires 4d3h comment "An Element" }
+
+timeout 3h15  
+## FLOWTABLES
+add flowtable ip6 xTable zFlowtable { hook input priority raw; devices = { "eth0"; }; }
+table ip6 xTable {
+    flowtable zFlowtable { hook ingress priority 0
+                           devices = { "eth0", "eth1"} }
+}
+
+## STATEFUL OBJECTS
+
+### CT HELPER
+add ct helper inet xTable aHelper { type "ftp" protocol ip ; l3proto ip ; }
+ct timeout
+ct expectation set
+counter
+quota
