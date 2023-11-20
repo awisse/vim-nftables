@@ -54,6 +54,7 @@ table inet fw {
 
 ## RULES
 add rule inet xTable xChain 
+##### FIXME: `saddr`, `dport` are operators with color different from identifier. `accept` is verdict/statement.
 add rule ip6 xTable xChain saddr { 10.0.0.0/8, 192.168.0.0/16 } tcp dport { 22, 443 } accept
 table inet fw {
     chain xChain {
@@ -63,11 +64,12 @@ table inet fw {
 }
 
 ## SETS
-add set inet xTable ySet { type ether_addr; flags interval; timeout 1.5m; gc-interval 3d; elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
+add set inet xTable ySet { type ether_addr; flags interval; timeout 15m; gc-interval 3d; elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
+add rule xTable xChain ip saddr { 10.0.0.0/8, 192.168.0.0/16 } tcp dport { 22, 443 } accept
 table inet fw {
-    set ySet { type ether_addr; flags interval; timeout 1.5d; gc-interval 3d; 
+    set ySet { type ether_addr; flags interval; timeout 1d6h15m; gc-interval 3d; 
         elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
-    set zSet { type ipv4_addr; flags timeout; timeout 3.1h; gc-interval 3d; 
+    set zSet { type ipv4_addr; flags timeout; timeout 3h15s; gc-interval 3d; 
         elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
     set zSet { typeof xExpr; flags timeout; timeout 30m; gc-interval 3d; 
         elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
@@ -100,8 +102,37 @@ table ip6 xTable {
 ## STATEFUL OBJECTS
 
 ### CT HELPER
-add ct helper inet xTable aHelper { type "ftp" protocol ip ; l3proto ip ; }
-ct timeout
-ct expectation set
+add ct helper inet xTable aCTHelper { type "ftp" protocol ip ; l3proto ip ; comment "CT Helper" }
+table ip6 xTable {
+    ct helper aHelper { 
+            type "ftp" protocol tcp ; l3proto ip ; comment "CT Helper" 
+    }
+}
+
+### CT TIMEOUT
+add ct timeout inet xTable aCTTimeout { protocol tcp ; l3proto ip ; policy = { established: 600, close: 20 } ; l3proto ip }
+table inet xTable {
+    ct timeout aCTTimeout 
+    {
+        protocol tcp 
+        policy = { established: 600, close: 20 }
+        l3proto ip 
+    }
+}
+### CT EXPECTATION
+add ct expectation inet xTable aCTExpect { protocol tcp ; dport 80 ; timeout 300 ; size 16 ; }
+table ip filter {
+   ct expectation expect {
+       protocol udp
+       dport 9876
+       timeout 2m
+       size 8
+       l3proto ip
+   }
+   chain input {
+       type filter hook input priority filter; policy accept;
+       ct expectation set "expect"
+   }
+}
 counter
 quota
