@@ -7,11 +7,17 @@ syn match   nftIdentifier   /[@$]\?\h[A-Za-z0-9_-]*/
 " Objects. Excluding `set`. See in statements.vim.
 " respectively.
 syn match   nftObject       "\<\(table\|chain\|map\|element\|rule\|flowtable\)\>"
-" Stateful Objects
-syn match   nftObject       "\<ct\s\+\%(helper\|timeout\|expectation\)\>"
+
 " counter and quota are also statements and types, but with the same meaning 
-" as the object
-syn keyword nftObject       counter quota
+" as the object: We shall prioritize the "Types" highlighting in types.vim.
+" syn keyword nftObject       counter quota
+
+" Address Families and Hooks
+syn keyword nftAddrFamily   inet arp bridge netdev
+" Used in CONNTRACK EXPRESSION later: ip, ip6
+syn match   nftAddrFamily   "\<\%(ip\|ip6\)\>"
+
+syn keyword nftHook         prerouting input forward output postrouting ingress egress
 
 " Comments
 syn keyword nftTodo         FIXME TODO XXX NOTE contained

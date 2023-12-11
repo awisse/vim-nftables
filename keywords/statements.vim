@@ -6,9 +6,8 @@ syn match   nftVerb         "\<flush\s\+ruleset\>"
 " VERDICT STATEMENTS
 syn keyword nftStatement            accept drop queue continue return jump goto
 
-" LOG STATEMENT (flags: expressions.vim)
-syn keyword nftStatement            log level group prefix queue-threshold
-                                    \ snaplen audit
+" LOG STATEMENT (level, flags, group: expressions.vim)
+syn keyword nftStatement            log prefix queue-threshold snaplen audit
 " REJECT STATEMENT
 syn match nftStatement              "\<reject\s\+with\>"
 
