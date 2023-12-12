@@ -1,4 +1,8 @@
 " vim: tabstop=4:shiftwidth=4:softtabstop=4:expandtab
+" TODO: 
+" 1. Reduce number of syntax groups. 
+" 2. Assign colors to groups. 
+" 3. Write test examples.
 let b:nft_debug = 1 " XXX: Set to 0 when not debugging
 if b:nft_debug == 1
   syntax clear 

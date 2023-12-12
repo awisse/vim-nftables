@@ -16,6 +16,7 @@ import re
 
 syn_match = re.compile("syn(tax)?\s+keyword")
 match_match = re.compile("syn(tax)?\s+match")
+color_match = re.compile(r"hi\s+link\s+(\w+)\s+(\w+)")
 kw_match = re.compile(r"(?<=[<(|])[-A-Za-z0-9_]{2,}")
 bs_match = re.compile(r"\s+\\")
 del_match = re.compile(r"syn(tax)?\s+match\s+\w+")
@@ -96,6 +97,13 @@ def parse_files(files, keywords):
     for fn in files:
         parse_keywords(fn, keywords)
 
+def parse_colors(files, color_defs):
+    """
+    Parse color groups and highlight group definitions.
+    Identify highlight groups to be defined.
+    Identify unused defined highlight groups.
+    """
+
 def print_results(keywords, matches, pattern='.*', table=False, pr_all=False):
     """
     Print information for duplicate entries.
@@ -170,6 +178,11 @@ def prepare_options():
                         default=False,
                         help=("Print all found keywords with line number "
                               "and filename"))
+
+    parser.add_argument('--colors', '-c',
+                        default='store_true',
+                        help=("Print color definitions, undefined colors, "
+                              "defined but unused colors"))
 
     return parser
 
