@@ -43,47 +43,34 @@ hi nftType                    ctermfg=3
 hi nftVerb                    ctermfg=219 
 hi nftValue                   ctermfg=9
 hi nftObject                  ctermfg=38
-hi nftTest                    ctermfg=11
-hi nftVerdict                 ctermfg=199
 
-hi link nftFlushRuleset   nftVerb
-hi link nftInclude        Include
-hi link nftString         String
+" Linked highlight groups
+" In basic.vim
+hi link nftIdentifier     Identifier
+hi link nftAddrFamily     nftType
+hi link nftHook           nftType
 hi link nftTodo           Todo
 hi link nftComment        Comment
-
-hi link nftCTVerb         nftVerb
-hi link nftIdentifier     Identifier
-hi link nftTest           Comment
-
+hi link nftString         String
+hi link nftInt            nftValue
+hi link nftHex            nftValue
 hi link nftIPv4addr       nftValue
 hi link nftIPv6addr       nftValue
-hi link nftTimespec       nftValue
-
-hi link nftChainType      nftType
-hi link nftProperty       PreProc
-hi link nftCTHelperSpec   nftProperty  
-hi link nftCTHelperState  nftType
-hi link nftCTState        nftType
-hi link nftDataType       nftType
-hi link nftSetFlags       nftType
-hi link nftFlagOfSet      nftType
-hi link nftPriority       nftType
-hi link nftPKTType        nftType 
-hi link nftL4Proto        nftType  
-hi link nftAddrFamily     nftType
-
-hi link nftStatefulObject nftObject
-hi link nftHook           nftType
-
-hi link nftConstant       Constant
-hi link nftINT            nftValue
-hi link nftDecimal        nftValue
-hi link nftHex            nftValue
 hi link nftMACaddr        nftValue
-hi link nftMeta           nftType
+hi link nftTimeout        nftValue
 
-hi link nftICMPType       nftType
+
+
+hi link nftProperty       PreProc
+hi link nftDataType       nftType
+
+hi link nftExpression     Identifier
+hi link nftNamedConstant  Identifier
+
+
+hi link nftStatement      Statement 
+
+
 
 let b:current_syntax = 'nftables'
 
