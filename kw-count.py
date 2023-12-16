@@ -54,8 +54,11 @@ VIM_DEFAULTS += ["Type", "StorageClass", "Structure", "Typedef"]
 # ctermfg=5, guifg=#6a5acd
 VIM_DEFAULTS += ["Special", "SpecialChar", "Tag", "Delimiter",
                  "SpecialComment", "Debug"]
+# ctermfg=0, ctermbg=11
+VIM_DEFAULTS += ["Todo"]
 syn_kw_pat = re.compile(r"syn(?:tax)?\s+keyword\s+(\w+)")
 syn_match_pat = re.compile(r"syn(?:tax)?\s+match\s+(\w+)")
+syn_region_pat = re.compile(r"syn(?:tax)?\s+region\s+(\w+)")
 hilink_pat = re.compile(r"hi\s+link\s+(\w+)\s+(\w+)")
 hicolor_pat = re.compile(r"hi\s+(\w+)\s+ctermfg=(\d{1,3})")
 match_kw_pat = re.compile(r"(?<=[<(|])[-A-Za-z0-9_]{2,}")
@@ -137,6 +140,7 @@ def parse_colors(f, filename, color_defs, used_groups):
         link_match = hilink_pat.match(line)
         kw_match = syn_kw_pat.match(line)
         match_match = syn_match_pat.match(line)
+        region_match = syn_region_pat.match(line)
         if color_match:
             group, color = color_match.groups()
             color_defs.setdefault(group, []).append(
@@ -152,6 +156,8 @@ def parse_colors(f, filename, color_defs, used_groups):
             used_groups[kw_match[1]] += 1
         elif match_match:
             used_groups[match_match[1]] += 1
+        elif region_match:
+            used_groups[region_match[1]] += 1
 
 def parse_files(files, parse_function, *args):
     """
