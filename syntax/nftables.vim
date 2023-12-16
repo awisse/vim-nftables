@@ -54,6 +54,7 @@ hi link nftComment        Comment
 
 hi link nftCTVerb         nftVerb
 hi link nftIdentifier     Identifier
+hi link nftTest           Comment
 
 hi link nftIPv4addr       nftValue
 hi link nftIPv6addr       nftValue
