@@ -221,7 +221,8 @@ def print_used_groups(color_defs, used_groups, yes, no):
             continue
         print(f"{group:25} {yesno:7} {used_groups[group]}")
 
-def print_keywords(keywords, pattern='.*', table=False, print_all=False):
+def print_keywords(keywords, pattern='.*', table=False, print_all=False,
+                   exclude=None, quiet=False):
     """
     Print information for duplicate entries.
     """
@@ -234,9 +235,12 @@ def print_keywords(keywords, pattern='.*', table=False, print_all=False):
     multi_count = 0
     # Keyword selection pattern
     kw_sel = re.compile(pattern)
+    excluded = exclude or []
     if table:
         print(TB_HEADER)
     for kw, context in keywords.items():
+        if kw in excluded:
+            continue
         key_len.update(kw)
         found_kwds = len(context)
         if found_kwds > multi:
@@ -244,8 +248,10 @@ def print_keywords(keywords, pattern='.*', table=False, print_all=False):
                 multi_count += 1
             if not kw_sel.match(kw):
                 continue
-            if not table:
-                print(f"{kw}: ")
+            if not table or quiet:
+                print(f"{kw}")
+                if quiet:
+                    continue
             for c in context:
                 print(FORMAT_STR[table]
                       .format(fn=c.filename, line=c.linenumber,
@@ -259,6 +265,21 @@ def print_keywords(keywords, pattern='.*', table=False, print_all=False):
         print(f"Number of keywords   : {len(keywords)}")
         # Number of keywords defined in multiple contexts
         print(f"Multiple defined kwds: {multi_count}")
+
+def exclude_file(arg):
+    """
+    Parse the file name `arg` for keywords. Return keywords as a list.
+    """
+    try:
+        with open(arg, 'r', encoding='ascii') as f:
+            kw_str = f.read()
+    except FileNotFoundError:
+        raise ValueError from FileNotFoundError
+
+    # Remove trailing whitespace, including empty lines
+    kw_str = re.sub(r'\s+\Z', '', kw_str)
+    keywords = re.split(r'\s+', kw_str)
+    return keywords
 
 def prepare_options():
     """
@@ -311,6 +332,18 @@ def prepare_options():
                         help=("For --colors and --used-groups. Only show "
                               "lines with \"Yes\" in the \"Used\" or "
                               "\"Defined\" columns."))
+
+    parser.add_argument('--exclude',
+                        type=exclude_file,
+                        default=None,
+                        help=("Exclude keywords from filename provided as "
+                               "argument to this option."))
+
+    parser.add_argument('--quiet', '-q',
+                        action='store_true',
+                        default=False,
+                        help=("Only display keywords, not context where "
+                              "they appear"))
     return parser
 
 def main():
@@ -336,7 +369,8 @@ def main():
     else:
         keywords = {}
         parse_files(args.files, parse_keywords, keywords)
-        print_keywords(keywords, args.regex, args.table, args.all)
+        print_keywords(keywords, args.regex, args.table, args.all,
+                       args.exclude, args.quiet)
 
 if __name__ == '__main__':
     main()
