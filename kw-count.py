@@ -11,7 +11,7 @@ Count number of definitions for each keyword definition
 3. The values of the dictionary are lists of tuples of filenames and
    linenumbers representing the position of the keyword, as well as whether
    they were found in a "syn keyword" line or a "syn match" line.
-4. Display all keywords that are found in more than one syntax
+4. By default: Display all keywords that are found in more than one syntax
    highlighting group.
 
 Colors
@@ -221,10 +221,17 @@ def print_used_groups(color_defs, used_groups, yes, no):
             continue
         print(f"{group:25} {yesno:7} {used_groups[group]}")
 
+
 def print_keywords(keywords, pattern='.*', table=False, print_all=False,
                    exclude=None, quiet=False):
     """
-    Print information for duplicate entries.
+    Print result corresponding to user options.
+    `pattern`: Only print keywords matching this pattern.
+    `table`: Print in human readable table format
+    `print_all`: Print all keywords, not only multiple defined ones.
+    `exclude`: List of keywords not to print.
+    `quiet`: Only print keywords, not filename and linenumber where
+             they are defined.
     """
     # Multiple matches must appear at least twice.
     # With the option `print_all`, appearing once is fine
@@ -286,7 +293,7 @@ def prepare_options():
     Prepare the option parser.
     """
     parser = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+                        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # One or more positional arguments: filenames to be parsed
     parser.add_argument('files', nargs='+',
@@ -336,8 +343,8 @@ def prepare_options():
     parser.add_argument('--exclude',
                         type=exclude_file,
                         default=None,
-                        help=("Exclude keywords from filename provided as "
-                               "argument to this option."))
+                        help=("Exclude keywords listed in filename provided "
+                              "as argument to this option."))
 
     parser.add_argument('--quiet', '-q',
                         action='store_true',
