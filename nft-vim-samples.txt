@@ -1,60 +1,73 @@
 # vim:ft=nftables
 
-################################ This block is for testing nftables.vim ###############################
+######################### This block is for testing nftables.vim ###############################
 # First, a sample line for each possibility from the man page:
 # 1. Creating tables, chains, sets, maps
 # 2. Adding rules
 # 3. Expressions
-# 
-## CONSTANTS
-1234
-192.168.0.2/24
-fe80:1b3::1/32
-[fe80:1b3::1]/32
-## STRING
-"The_quick br0wn F0x jumps over the l@zy dog"
-## IDENTIFIER
-xTable yChain zMap $zMap @ySet
+#
+## Multi-use keywords:
+## These keywords are used in expressions and statements we have to choose the appropriate
+## highlighting category.
+## ip: Address Family, l3proto (protocol), IPV4 Header Expression, Extension Hdr Expr,
+##     Log Statement ip options
+## ip6\?: Address Family, l3proto (protocol), IPV4 Header Expression
+## set: Object, Verb (set a value)
+## input: Hook,
+## filter: Chain type, Priority name
+##
+## Comment with TODO, XXX, FIXME, NOTE, "string"
 
 ## INCLUDE FILES
 include other_rules.nft
+
+## nftObject
+table chain map element rule flowtable counter quota
 
 ## SYMBOLIC VARIABLES
 define aVariable = 1234
 undefine aVariable
 redefine aVariable = 255.255.255.0
 $aVariable
+define int_if1 = eth0
+define int_if2 = eth1
+define int_ifs = { $int_if1, $int_if2 }
+redefine int_if2 = wlan0
+undefine int_if2
+filter input iif $int_ifs accept
 
 ## ADDRESS FAMILIES
 ip ip6 inet arp bridge netdev
-## Hooks
+### Hooks
 prerouting input forward output postrouting ingress egress
 
-## RULESET
+
+## RULESET (`list` makes no sense in script)
 flush ruleset
 
-## TABLES
+## TABLES (`flags`, `list`, `delete`: No use in script.)
 add table xTable inet comment "xTable"
-delete table yTable arp comment "xTable yTable"
+delete table arp yTable
+flush table ip yTable
 add table xIP comment "A table with default address family"
 
-## CHAINS
+## CHAINS (`create`, `rename`, `list`: No use in script.)
 chain nat yTable xChain {
     type filter; hook prerouting; device "eth0"; priority filter; policy drop; comment "A new chain"
 }
 add chain ip yTable xChain type nat hook input device "eth0" priority filter policy drop comment "A new chain"
 add chain ip yTable xChain type filter hook input device "eth0" priority filter policy drop comment "A new chain"
-add chain ip yTable xChain type route hook input device "eth0" priority filter policy drop comment "A new chain"
-priority raw mangle dstnat filter security srcnat out
+add chain ip yTable xChain type route hook input device "eth0" priority -250 policy drop comment "A new chain"
 table inet fw {
     chain xChain {
         type filter; hook prerouting; device "eth0"; priority filter; policy drop; comment "A new chain"
     }
 }
+### Priority Names
+priority raw mangle dstnat filter security srcnat out
 
-## RULES
-add rule inet xTable xChain 
-##### FIXME: `saddr`, `dport` are operators with color different from identifier. `accept` is verdict/statement.
+## RULES (`replace` not used in script)
+add rule inet xTable xChain index 3
 add rule ip6 xTable xChain saddr { 10.0.0.0/8, 192.168.0.0/16 } tcp dport { 22, 443 } accept
 table inet fw {
     chain xChain {
@@ -63,23 +76,31 @@ table inet fw {
     }
 }
 
-## SETS
-add set inet xTable ySet { type ether_addr; flags interval; timeout 15m; gc-interval 3d; elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
+## SETS (`set` is a reserved word, '{' and '}' are highlighted as delimiters)
+add set inet xTable ySet { type ether_addr; flags interval; timeout 15m; gc-interval 3d; elements={10:20:30:40:50:a0:bb:cc, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
 add rule xTable xChain ip saddr { 10.0.0.0/8, 192.168.0.0/16 } tcp dport { 22, 443 } accept
 table inet fw {
-    set ySet { type ether_addr; flags interval; timeout 1d6h15m; gc-interval 3d; 
+    set ySet { type ether_addr; flags interval; timeout 1d6h15m; gc-interval 3d;
         elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
-    set zSet { type ipv4_addr; flags timeout; timeout 3h15s; gc-interval 3d; 
+    set ySet { type ether_addr; flags constant; timeout 1d6h15m; gc-interval 3d;
         elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
-    set zSet { typeof xExpr; flags timeout; timeout 30m; gc-interval 3d; 
+    set zSet { type ipv4_addr; flags timeout; timeout 3h15s; gc-interval 3d;
+        elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
+    set zSet { typeof xExpr; flags timeout; timeout 30m; gc-interval 3d;
         elements={10:20:30:40:50:a0, ae:76:00:39:1f:6e}; size 34; comment "A Set"; policy accept; auto-merge }
     chain xChain {
         type filter; hook prerouting; device "eth0"; priority filter; policy drop; comment "A new chain"
         saddr { 10.0.0.0/8, 192.168.0.0/16 } tcp dport { 22, 443 } accept
     }
 }
+add set inet xTable ySet { type mark ; type ipv6_addr ; type inet_proto }}
+
 
 ## MAPS
+nft add map nat porttoip  { type inet_service: ipv4_addr; }
+nft add map nat porttoip  { type inet_service: counter; }
+nft add map nat porttoip  { type inet_service: quota; }
+nft add element nat porttoip { 80 : 192.168.1.100, 8888 : 192.168.1.101 }
 add map ip6 xTable yMap { type inet_service: ipv6_addr; flags constant; elements = { 80 : fe80:ae61:1234:abcd::123 };
     size 15; comment "A Map"; policy accept }
     table ip6 xTable {
@@ -87,11 +108,18 @@ add map ip6 xTable yMap { type inet_service: ipv6_addr; flags constant; elements
             size 15; comment "A Map"; policy accept }
 }
 
-
 ## ELEMENTS
 add element ip xTable ySet { theElement timeout 3h15m expires 4d3h comment "An Element" }
 
-timeout 3h15  
+## Seconds with and without unit
+expires 4d3h13s
+timeout 3h15m13
+timeout 1d
+timeout 1d6h
+timeout 1000
+gc-interval 12
+gc-interval 12d
+
 ## FLOWTABLES
 add flowtable ip6 xTable zFlowtable { hook input priority raw; devices = { "eth0"; }; }
 table ip6 xTable {
@@ -99,24 +127,26 @@ table ip6 xTable {
                            devices = { "eth0", "eth1"} }
 }
 
+### XXX We are here XXX
+
 ## STATEFUL OBJECTS
 
 ### CT HELPER
 add ct helper inet xTable aCTHelper { type "ftp" protocol ip ; l3proto ip ; comment "CT Helper" }
 table ip6 xTable {
-    ct helper aHelper { 
-            type "ftp" protocol tcp ; l3proto ip ; comment "CT Helper" 
+    ct helper aHelper {
+            type "ftp" protocol tcp ; l3proto ip ; comment "CT Helper"
     }
 }
 
 ### CT TIMEOUT
 add ct timeout inet xTable aCTTimeout { protocol tcp ; l3proto ip ; policy = { established: 600, close: 20 } ; l3proto ip }
 table inet xTable {
-    ct timeout aCTTimeout 
+    ct timeout aCTTimeout
     {
-        protocol tcp 
+        protocol tcp
         policy = { established: 600, close: 20 }
-        l3proto ip 
+        l3proto ip
     }
 }
 ### CT EXPECTATION
@@ -125,7 +155,7 @@ table ip filter {
    ct expectation expect {
        protocol udp
        dport 9876
-       timeout 2m
+       timeout 2
        size 8
        l3proto ip
    }
@@ -134,5 +164,347 @@ table ip filter {
        ct expectation set "expect"
    }
 }
-counter
-quota
+add counter inet xTable yCounter { packets 54 bytes 128 }
+add quota ip xTable yQuota { over 500 mbytes used 50 kbytes }
+add quota ip xTable yQuota { until 500 mbytes used 50 kbytes }
+
+## EXPRESSIONS
+## TCP FLAGS
+fin syn rst psh ack urg ecn cwr
+
+## DATA TYPES
+integer bitmask string lladdr ipv4_addr ipv6_addr boolean icmp_type icmp_code
+### Values
+1234                # nftInt
+0x3f9c              # nftHex
+192.168.0.2/24      # nftIPv4addr
+192.168.0.2         # nftIPv4addr
+10.10.0.0/8         # nftIPv4addr
+1.1.1.1             # nftIPv4addr
+::                  # nftIPv4addr
+::1                 # nftIPv6addr
+3abc::1:2ab:3ff0    # nftIPv6addr
+3abc:123::1:2b:3ff0 # nftIPv6addr
+1::                 # nftIPv6addr
+fe80::              # nftIPv6addr
+fe80:1b3::1/32      # nftIPv6addr
+[fe80:1b3::1]/32    # nftIPv6addr
+[fe80::]/32         # nftIPv6addr
+[::1]/32            # nftIPv6addr
+[::]/32             # nftIPv6addr
+4b:3a:02:33:ac:44   # nftMACaddr
+#### Note: A sole colon (`:`) must not be highlighted as an IPv6 address
+:
+###nftString
+"The_quick br0wn F0x jumps over the l@zy dog"
+### Defined constants
+exists missing
+### ICMP Type
+echo-reply destination-unreachable source-quench redirect echo-request
+router-advertisement router-solicitation time-exceeded parameter-problem timestamp-request
+timestamp-reply info-request info-reply address-mask-request address-mask-reply
+### ICMP Code
+net-unreachable host-unreachable prot-unreachable port-unreachable
+frag-needed net-prohibited host-prohibited admin-prohibited
+
+### ICMPV6 Type
+icmpx_code
+destination-unreachable
+packet-too-big
+time-exceeded
+parameter-problem
+echo-request
+echo-reply
+mld-listener-query
+mld-listener-report
+mld-listener-done
+mld-listener-reduction
+nd-router-solicit
+nd-router-advert
+nd-neighbor-solicit
+nd-neighbor-advert
+nd-redirect
+router-renumbering
+ind-neighbor-solicit
+ind-neighbor-advert
+mld2-listener-report
+
+### ICMPV6 CODE
+icmpv6_code
+no-route admin-prohibited addr-unreachable port-unreachable policy-fail reject-route
+
+### ICMPVX CODE
+icmpv6_type
+no-route host-unreachable
+
+### CONNTRACK TYPES
+ct_state invalid established related new untracked
+ct_dir original reply
+ct_status expected seen-reply assured confirmed snat dnat dying
+ct_event new related destroy reply assured protoinfo helper mark seqadj secmark label
+ct_label
+
+### DCCP PKTTYPE TYPE
+dccp_pkttype request response data ack dataack closereq close reset sync syncack
+
+## PRIMARY EXPRESSIONS
+
+### META EXPRESSIONS
+meta length nfproto l4proto protocol priority
+meta mark iif iifname iiftype oif oifname oiftype skuid skgid nftrace
+meta rtclassid ibrname obrname pkttype cpu iifgroup oifgroup cgroup random
+meta ipsec iifkind oifkind time hour day
+
+### SOCKET EXPRESSION
+socket transparent
+socket mark
+socket wildcard
+socket cgroupv2 level
+
+### OSF EXPRESSION
+osf ttl loose skip name version
+
+### FIB EXPRESSIONS
+fib saddr daddr mark iif oif oifname type
+
+### ROUTING EXPRESSIONS
+rt ip ip6 classid nexthop mtu ipsec
+
+### IPSEC EXPRESSIONS
+ipsec in spnum 3 reqid spi
+ipsec out ip ip6 saddr daddr
+
+### NUMGEN EXPRESSION
+numgen inc random mod offset
+
+### HASH EXPRESSIONS
+jhash ip saddr ip6 daddr tcp dport udp sport ether saddr mod 0x1F
+jhash seed 0x1F offset 0x1F
+symhash mod 0x1F offset 0x1F
+
+## PAYLOAD EXPRESSIONS
+### ETHERNET HEADER EXPRESSION
+ether daddr saddr type
+
+### VLAN HEADER EXPRESSION
+vlan id dei pcp type
+
+### ARP HEADER EXPRESSION
+arp htype ptype hlen plen operation saddr ip ether daddr ip ether
+
+### IPV4 HEADER EXPRESSION
+ip version hdrlength dscp ecn length id frag-off ttl protocol checksum saddr daddr
+
+### ICMP HEADER EXPRESSION
+icmp type code checksum id sequence gateway mtu
+
+### IGMP HEADER EXPRESSION
+igmp type checksum mrt group
+
+### IPV6 HEADER EXPRESSION
+ip6 version dscp ecn flowlabel length nexthdr hoplimit saddr daddr
+
+### ICMPV6 HEADER EXPRESSION
+icmpv6 type code checksum parameter-problem packet-too-big id sequence max-delay
+
+### TCP HEADER EXPRESSION
+tcp sport dport sequence ackseq doff reserved flags window checksum urgptr
+
+### UDP HEADER EXPRESSION
+udp sport dport length checksum
+
+### UDP-LITE HEADER EXPRESSION
+udplite sport dport checksum
+
+### SCTP HEADER EXPRESSION
+sctp sport dport  vtag  checksum
+sctp chunk
+#### CHUNK
+ data init init-ack sack heartbeat
+ heartbeat-ack abort shutdown shutdown-ack error
+ cookie-echo cookie-ack ecne cwr shutdown-complete asconf-ack forward-tsn
+ asconf
+#### FIELD
+ type flags length
+ tsn stream ssn ppid
+ init-tag a-rwnd num-outbound-streams num-inbound-streams initial-tsn
+ cum-tsn-ack a-rwnd num-gap-ack-blocks num-dup-tsns
+ lowest-tsn
+ seqno
+ new-cum-tsn
+
+### DCCP HEADER EXPRESSION
+dccp sport dport type
+
+### AUTHENTICATION/ENCRYPTED SECURITY/IPCOMP HEADER EXPRESSION
+ah nexthdr hdrlength reserved spi sequence cpi
+
+### RAW PAYLOAD EXPRESSION
+@ll,24,0x4A
+@nh,24,0x4A
+@th,24,0x4A
+
+### EXTENSION HEADER EXPRESSIONS
+hbh nexthdr hdrlength
+frag nexthdr frag-off more-fragments id
+rt nexthdr hdrlength type seg-left
+dst nexthdr hdrlength
+mh nexthdr hdrlength checksum type
+srh flags tag sid seg-left
+tcp option eol nop maxseg window sack-perm sack sack0 sack1 sack2 sack3 timestamp
+ip option lsrr ra rr ssrr
+exthdr hbh frag rt dst mh
+
+### CONNTRACK EXPRESSIONS
+ct state direction status mark expiration helper label count id
+ct original reply l3proto protocol bytes packets avgpkt zone
+ct original reply proto-src proto-dst
+ct original reply ip ip6 saddr daddr
+
+## STATEMENTS
+### VERDICT STATEMENT
+accept drop queue continue return
+jump abc goto def
+
+### PAYLOAD/EXTENSION HEADER STATEMENT
+expression set value
+
+### LOG STATEMENT
+log prefix "BLOCK" level debug flags tcp sequence,options ip options
+log group prefix queue-threshold snaplen
+log group 
+log level debug flags all
+log level prefix flags
+log flags
+
+### REJECT STATEMENT
+reject with tcp reset
+reject
+
+### COUNTER STATEMENT: Type (in map, set), Object (add counter) and Statement (counter ...)
+#### Type: always prefixed with `type`
+add map inet xTable xMap { type counter }}
+#### Object: Can be standalone inside a table definition.
+add counter inet xTable xCounter
+#### Statement: Can be standalone
+counter packets 31 bytes 0x1000
+#### Type: always prefixed with `type`
+add map inet xTable xMap { type quota }}
+#### Object: Can be standalone inside a table definition.
+add quota inet xTable xCounter
+#### Statement: Can be standalone
+quota packets 31 bytes 0x1000
+
+### CONNTRACK STATEMENT
+ct mark set meta mark
+ct helper set "helper"
+ct label set label
+table inet raw {
+ chain prerouting {
+     type filter hook prerouting priority raw;
+     ct zone set iif map { "eth1" : 1, "veth1" : 2 }
+ }
+ chain output {
+     type filter hook output priority raw;
+     ct zone set oif map { "eth1" : 1, "veth1" : 2 }
+ }
+}
+ct event set new,related,destroy
+
+### NOTRACK STATEMENT
+notrack
+
+### META STATEMENT
+#### Colored as expressions.
+meta mark set
+meta priority set
+meta pkttype set
+meta nftrace set
+
+### LIMIT STATEMENT
+limit rate over 32 second burst 64 packets
+limit rate over 32 minute burst 64 packets
+limit rate over 32 hour burst 64 mbytes
+limit rate over 32 day burst 64 kbytes
+limit rate over 32 day burst 3000 bytes
+
+### NAT STATEMENTS
+snat ip to 192.168.0.1 persistent
+snat ip6 to fe80::1 random
+dnat ip to 192.168.0.1 fully-random, random
+dnat ip6 to fe80::1
+snat 192.168.0.1
+snat fe80::1
+dnat 192.168.0.1
+dnat fe80::1
+masquerade to 1151 persistent
+redirect to 1511
+#### Using NAT statements
+# create a suitable table/chain setup for all further examples
+add table nat
+add chain nat prerouting { type nat hook prerouting priority dstnat; }
+add chain nat postrouting { type nat hook postrouting priority srcnat; }
+
+# translate source addresses of all packets leaving via eth0 to address 1.2.3.4
+add rule nat postrouting oif eth0 snat to 1.2.3.4
+
+# redirect all traffic entering via eth0 to destination address 192.168.1.120
+add rule nat prerouting iif eth0 dnat to 192.168.1.120
+
+# translate source addresses of all packets leaving via eth0 to whatever
+# locally generated packets would use as source to reach the same destination
+add rule nat postrouting oif eth0 masquerade
+
+# redirect incoming TCP traffic for port 22 to port 2222
+add rule nat prerouting tcp dport 22 redirect to :2222
+
+# inet family:
+# handle ip dnat:
+add rule inet nat prerouting dnat ip to 10.0.2.99
+# handle ip6 dnat:
+add rule inet nat prerouting dnat ip6 to fe80::dead
+# this masquerades both ipv4 and ipv6:
+add rule inet nat postrouting meta oif ppp0 masquerade
+
+### TPROXY STATEMENT
+tproxy to 192.168.56.11:890
+tproxy ip to 192.168.56.11:890
+tproxy to :890
+
+### SYNPROXY STATEMENT
+synproxy mss 1460 wscale 9 sack-perm timestamp
+table ip x {
+       chain z {
+               type filter hook input priority filter; policy accept;
+               ct state invalid, untracked synproxy mss 1460 wscale 9 timestamp sack-perm
+               ct state invalid drop
+       }
+}
+
+### FLOW STATEMENT
+flow add @ft
+
+### QUEUE STATEMENT
+queue flags bypass to numgen
+queue flags fanout to hash
+queue flags fanout to symhash
+queue to 13
+ 
+### DUP STATEMENT
+ip filter forward dup to 10.2.3.4 device "eth0"
+netdev ingress dup to "eth0"
+dup to "eth0"
+dup to ip daddr map { 192.168.7.1 : "eth0", 192.168.7.2 : "eth1" }
+
+### FWD STATEMENT
+fwd to "eth0"
+
+### SET STATEMENT
+add @flood { ip saddr limit rate over 10/second }
+add @blackhole { ip saddr }
+
+### MAP STATEMENT
+add rule ip nat postrouting snat to ip saddr map { 192.168.1.0/24 : 10.0.0.1, 192.168.2.0/24 : 10.0.0.2 }:w
+
+### VMAP STATEMENT
+add rule ip filter input ip protocol vmap { tcp : jump tcp-chain, udp : jump udp-chain , icmp : jump icmp-chain }

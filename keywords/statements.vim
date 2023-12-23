@@ -1,15 +1,18 @@
 " Verbs and keywords used in statements
 " Verbs. `set`, object or verb? We go with verb.
-syn keyword nftVerb         include define undefine redefine add delete reset set 
-syn match   nftVerb         "\<flush\s\+ruleset\>"
+syn keyword nftVerb         define undefine redefine add delete set update
+syn keyword nftVerb         flush ruleset
+syn keyword nftInclude      include
 
 " VERDICT STATEMENTS
 syn keyword nftStatement            accept drop queue continue return jump goto
 
-" LOG STATEMENT (level, flags, group: expressions.vim)
-syn keyword nftStatement            log prefix queue-threshold snaplen audit
+" LOG STATEMENT (level, flags: expressions.vim)
+syn keyword nftStatement            prefix queue-threshold snaplen 
+syn match   nftStatement            "\<log\%(\s\+\%(group\|prefix\)\)\?\>"
+
 " REJECT STATEMENT
-syn match nftStatement              "\<reject\s\+with\>"
+syn match nftStatement              "\<reject\%(\s\+with\)\?\>"
 
 " COUNTER STATEMENT (counter, packets, bytes) covered in expressions, types
 " CONNTRACK (ct {mark | event | label | zone } set) covered in expressions
@@ -22,9 +25,9 @@ syn keyword nftStatement            notrack
 
 " LIMIT STATEMENT (hour day bytes) covered in expressions
 "
-syn keyword nftStatement            limit rate over burst second minute kbytes mbytes
+syn keyword nftStatement            limit rate
 
-" NAT STATEMENTS 
+" NAT STATEMENTS (Also in CONNTRACK EXPRESSION. Statement has precedence.)
 syn keyword nftStatement            snat dnat masquerade redirect to 
 
 " TPROXY STATEMENT (to: covered by NAT)
@@ -38,5 +41,11 @@ syn keyword nftStatement            flow
 
 " QUEUE STATEMENT (queue: VERDICT, to: NAT, flags: expressions.vim)
 
-" DUP STATEMENT (to: NAT
+" DUP/FWD STATEMENT (to: NAT)
+syn keyword nftStatement            dup fwd
+
+" MAP STATEMENT (map: nftObject)
+
+" VMAP STATEMENT 
+syn keyword nftStatement            vmap
 " vim: tabstop=4:shiftwidth=4:softtabstop=4:expandtab

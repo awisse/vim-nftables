@@ -1,8 +1,6 @@
 # Notes About Keyword Highlighting
 
-There are a total of 368 keywords in nftables (computed with kw-count.py)
-
-## Decisions
+There are a total of 380 keywords in nftables (computed with kw-count.py)
 
 In this directory, we collect keywords to be highlighted, separated by their
 function. Colors will be assigned according to the category.
@@ -25,6 +23,8 @@ Decide which keyword belongs in which category.
 
 * Statements: drop, accept, ...
 
-Multifunction keywords (Keywords that are in two or more categories. 
-Examples: `set, ip`). How will these be highlighted?
+## Keywords that are in two or more categories. 
+Examples: `set`: object or statement, `counter`: object, statement or type). A 
+choice is made in each case and the choice is documented in the keyword file.
+Where possible, distinct highlighting is used with `syntax match` commands.  
 
