@@ -75,5 +75,16 @@ syn keyword nftNamedConstant    data init init-ack heartbeat
 " log-flags (skuid: META EXPRESSION ether: HASH EXPRESSION)
 syn keyword nftNamedConstant    sequence options all emerg alert crit err warn notice
                                 \ info debug audit
-
+" PRE-DEFINED SYMBOLIC CONSTANTS
+" (https://wiki.nftables.org/wiki-nftables/index.php/Data_types)
+" Date and Time
+syn keyword nftNamedConstant    Sunday Monday Tuesday Wednesday Thursday Friday Saturday
+syn keyword nftNamedConstant    Sun Mon Tue Wed Thu Fri Sat
+" Network Interface Types
+syn keyword nftNamedConstant    ether ppp ipip ipip6 loopback sit ipgre
+" Ethernet Types (arp, ip, ip6: nftAddrFamily)
+syn keyword nftNamedConstant    vlan
+" ARP Types (request: dccp_pkttype, reply: Conntrack)
+syn keyword nftNamedConstant    rrequest rreply inrequest inreply nak
 " vim: tabstop=4:shiftwidth=4:softtabstop=4:expandtab
+syn keyword nftNamedConstant    host unicast broadcast multicast other

@@ -508,3 +508,25 @@ add rule ip nat postrouting snat to ip saddr map { 192.168.1.0/24 : 10.0.0.1, 19
 
 ### VMAP STATEMENT
 add rule ip filter input ip protocol vmap { tcp : jump tcp-chain, udp : jump udp-chain , icmp : jump icmp-chain }
+
+## PRE-DEFINED SYMBOLIC CONSTANTS
+### Date and Time
+Sunday Monday Tuesday Wednesday Thursday Friday Saturday
+Sun Mon Tue Wed Thu Fri Sat
+17:00
+17:00:00
+### Network Interface Types
+ether ppp ipip ipip6 loopback sit ipgre
+### Ethernet Types 
+arp ip ip6 vlan
+### ARP Types
+request reply rrequest rreply inrequest inreply nak
+### IP Types
+tcp udp udplite esp ah icmp icmpv6 comp dccp sctp
+### Conntrack Types (snat, dnat: Statements)
+original reply
+new related destroy reply assured protoinfo helper mark seqadj secmark label
+invalid established related new untracked
+expected seen-reply assured confirmed snat dnat dying
+### Other Types
+host unicast broadcast multicast other

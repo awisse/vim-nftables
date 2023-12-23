@@ -1,6 +1,6 @@
 # Notes About Keyword Highlighting
 
-There are a total of 380 keywords in nftables (computed with kw-count.py)
+There are a total of 431 keywords in nftables (computed with kw-count.py)
 
 In this directory, we collect keywords to be highlighted, separated by their
 function. Colors will be assigned according to the category.

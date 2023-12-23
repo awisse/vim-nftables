@@ -33,9 +33,8 @@ syn keyword nftExpression           in out reqid spi
 " NUMGEN EXPRESSION (random: covered my META)
 syn keyword nftExpression           numgen inc mod offset
 
-" HASH EXPRESSION (saddr daddr: covered before, ether: log-flag
-" (named-constants.vim))
-syn keyword nftExpression           jhash tcp dport udp sport ether seed symhash
+" HASH EXPRESSION (saddr daddr: covered before, ether: named-constants.vim)
+syn keyword nftExpression           jhash tcp dport udp sport seed symhash
 
 " ETHERNET HEADER EXPRESSION (ether daddr saddr type: covered before)
 

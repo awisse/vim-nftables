@@ -34,6 +34,6 @@ as table, chain set or other object names, these will be highlighted like the
 corresponding keyword. So in order to fully benefit from this syntax 
 highlighting, choose object and variable names that are not reserved words. 
 
-Note that there are 400 reserved words in nftables. To see all reserved words,
+Note that there are 431 reserved words in nftables. To see all reserved words,
 run `./kw-count.py keywords/*.vim syntax/nftables.vim -q --all` in the
 `vim-nftables` folder
