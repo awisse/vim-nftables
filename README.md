@@ -1,7 +1,6 @@
 # vim-nftables
-G
-## Installation
 
+## Installation
 
 [NeoBundle](#neobundle) is no longer actively maintained. In newer versions of vim, there 
 is no need for a plugin manager. In order to install the plugin such that it
@@ -25,9 +24,16 @@ After installing NeoBundle, add the following to your vimrc:
 NeoBundle 'nfnty/vim-nftables'
 ```
 
+## Notes
+
 ## Recommendations
 
-Note that this is not a full parser of the nftables syntax. If you choose a reserved keyword, like, 
-for instance `input`, `example`, `filter`, `forward` as table, chain 
-set or other object names, these will be highlighted like the corresponding keyword. So in order to fully benefit from this syntax 
-highlighting, choose object names that are not reserved words. 
+Note that this is not a full parser of the nftables syntax. If you choose a 
+reserved keyword, like, for instance `input`, `filter`, `forward` 
+as table, chain set or other object names, these will be highlighted like the 
+corresponding keyword. So in order to fully benefit from this syntax 
+highlighting, choose object and variable names that are not reserved words. 
+
+Note that there are 400 reserved words in nftables. To see all reserved words,
+run `./kw-count.py keywords/*.vim syntax/nftables.vim -q --all` in the
+`vim-nftables` folder
