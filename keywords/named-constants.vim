@@ -86,5 +86,8 @@ syn keyword nftNamedConstant    ether ppp ipip ipip6 loopback sit ipgre
 syn keyword nftNamedConstant    vlan
 " ARP Types (request: dccp_pkttype, reply: Conntrack)
 syn keyword nftNamedConstant    rrequest rreply inrequest inreply nak
-" vim: tabstop=4:shiftwidth=4:softtabstop=4:expandtab
 syn keyword nftNamedConstant    host unicast broadcast multicast other
+" FIB_ADDRTYPE (other than covered in previous)
+syn keyword nftNamedConstant    unspec local anycast unreachable blackhole
+
+" vim: tabstop=4:shiftwidth=4:softtabstop=4:expandtab

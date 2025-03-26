@@ -267,6 +267,9 @@ osf ttl loose skip name version
 ### FIB EXPRESSIONS
 fib saddr daddr mark iif oif oifname type
 
+### FIB_ADDRTYPE
+unspec unicast local broadcast anycast multicast blackhole unreachable prohibit
+
 ### ROUTING EXPRESSIONS
 rt ip ip6 classid nexthop mtu ipsec
 
